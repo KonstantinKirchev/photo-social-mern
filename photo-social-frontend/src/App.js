@@ -5,6 +5,7 @@ import { makeStyles } from '@mui/styles';
 import Modal from '@mui/material/Modal';
 import { Button, Input } from '@mui/material';
 import { auth } from './firebase'
+import ImageUpload from './components/ImageUpload';
 
 function getModalStyle() {
   const top = 50;
@@ -113,16 +114,20 @@ function App() {
       </Modal>
       <div className="app__header">
         <img className="app__headerImage" src="logo192.png" alt="Header" />
+        {user ? <Button onClick={() => auth.signOut()}>Logout</Button> : (
+          <div className="app__loginContainer">
+            <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
+            <Button onClick={() => setOpen(true)}>Sign Up</Button>
+          </div>
+        )}
       </div>
-      {user ? <Button onClick={() => auth.signOut()}>Logout</Button> : (
-        <div className="app__loginContainer">
-          <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
-          <Button onClick={() => setOpen(true)}>Sign Up</Button>
-        </div>
-      )}
-      {posts.map(post => (
-        <Post username={post.username} caption={post.caption} imageUrl={post.imageUrl} />
-      ))}
+      <div className="app__posts">
+        {posts.map(post => (
+          <Post username={post.username} caption={post.caption} imageUrl={post.imageUrl} />
+        ))}
+      </div>
+      {user?.displayName ? <ImageUpload username={user.displayName} /> :
+        <h3 className="app__notLogin">Need to login to upload</h3>} 
     </div>
   );
 }
