@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import Cors from 'cors'
 import Posts from './postModel.js'
 import Pusher from 'pusher'
+import dotenv from 'dotenv';
 
 //App Config
 dotenv.config()
