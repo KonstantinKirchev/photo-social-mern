@@ -2,11 +2,19 @@ import express from 'express'
 import mongoose from 'mongoose'
 import Cors from 'cors'
 import Posts from './postModel.js'
+import Pusher from 'pusher'
 
 //App Config
 const app = express()
 const port = process.env.PORT || 9000
 const connection_url = 'mongodb+srv://KonstantinKirchev:mama2119@cluster0.qpfxhtj.mongodb.net/photoDB?retryWrites=true&w=majority'
+const pusher = new Pusher({
+    appId: "1541305",
+    key: "d013fa8f05a31ca9c514",
+    secret: "757eb8b7514305344d2b",
+    cluster: "eu",
+    useTLS: true
+});
 
 //Middleware
 app.use(express.json())
@@ -17,6 +25,22 @@ mongoose.set('strictQuery', true)
 mongoose.connect(connection_url, {
     useNewUrlParser: true,
     useUnifiedTopology: true
+})
+
+mongoose.connection.once('open', () => {
+    console.log('DB Connected')
+    const changeStream = mongoose.connection.collection('posts').watch()
+    changeStream.on('change', change => {
+        console.log(change)
+        if(change.operationType === "insert") {
+            console.log('Trigerring Pusher')
+            pusher.trigger('posts','inserted', {
+                change: change
+            })
+        } else {
+            console.log('Error trigerring Pusher')
+        }
+    })
 })
 
 //API Endpoints
