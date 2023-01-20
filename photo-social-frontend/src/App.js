@@ -6,6 +6,8 @@ import Modal from '@mui/material/Modal';
 import { Button, Input } from '@mui/material';
 import { auth } from './firebase'
 import ImageUpload from './components/ImageUpload';
+import axios from './axios'
+import Pusher from 'pusher-js'
 
 function getModalStyle() {
   const top = 50;
@@ -42,18 +44,26 @@ function App() {
 
   const [openSignIn, setOpenSignIn] = useState(false)
 
-  const [posts, setPosts] = useState([
-    {
-      username: "TWD",
-      caption: "🔥Build a Messaging app with MERN Stack🔥",
-      imageUrl: "https://www.techlifediary.com/wp-content/uploads/2020/06/react-js.png"
-    },
-    {
-      username: "nabendu82",
-      caption: "Such a beautiful world",
-      imageUrl: "https://quotefancy.com/media/wallpaper/3840x2160/126631-Charles-Dickens-Quote-And-a-beautiful-world-you-live-in-when-it-is.jpg"
-    }
-  ])
+  const [posts, setPosts] = useState([])
+
+  const fetchPosts = async () => {
+    await axios.get("/sync").then(response => setPosts(response.data))
+  }
+
+  useEffect(() => {
+    fetchPosts()
+  },[])
+
+  const pusher = new Pusher('d013fa8f05a31ca9c514', {
+    cluster: 'eu'
+  });
+
+  useEffect(() => {
+    const channel = pusher.subscribe('posts');
+    channel.bind('inserted', (data) => {
+      fetchPosts()
+    });
+  }, [])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(authUser => {
@@ -123,7 +133,10 @@ function App() {
       </div>
       <div className="app__posts">
         {posts.map(post => (
-          <Post username={post.username} caption={post.caption} imageUrl={post.imageUrl} />
+          <Post key={post._id}
+              username={post.user}
+              caption={post.caption}
+              imageUrl={post.image} />
         ))}
       </div>
       {user?.displayName ? <ImageUpload username={user.displayName} /> :
