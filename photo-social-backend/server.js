@@ -5,13 +5,14 @@ import Posts from './postModel.js'
 import Pusher from 'pusher'
 
 //App Config
+dotenv.config()
 const app = express()
 const port = process.env.PORT || 9000
-const connection_url = 'mongodb+srv://KonstantinKirchev:mama2119@cluster0.qpfxhtj.mongodb.net/photoDB?retryWrites=true&w=majority'
+const connection_url = process.env.DB_CONN
 const pusher = new Pusher({
-    appId: "1541305",
-    key: "d013fa8f05a31ca9c514",
-    secret: "757eb8b7514305344d2b",
+    appId: process.env.PUSHER_ID,
+    key: process.env.PUSHER_KEY,
+    secret: process.env.PUSHER_SECRET,
     cluster: "eu",
     useTLS: true
 });
